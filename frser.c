@@ -297,7 +297,6 @@ static void do_cmd_opbuf_exec(void) {
 		if ((op == OPBUF_WRITE1OP)||(op==OPBUF_WRITENOP)) {
 			uint32_t addr;
 			u16_u len;
-			uint16_t i;
 			len.l = 1;
 			if (op==OPBUF_WRITENOP) {
 				len.b[0] = opbuf[readptr++];
@@ -306,14 +305,9 @@ static void do_cmd_opbuf_exec(void) {
 			addr = buf2u24(opbuf+readptr);
 			readptr += 3;
 			if ((readptr+len.l) > opbuf_bytes) goto nakret;
-			for(i=0;;) {
-				uint8_t c;
-				c = opbuf[readptr++];
-				flash_write(addr,c);
-				addr++;
-				i++;
-				if (i==len.l) break;
-			}
+
+			flash_writen(addr, opbuf+readptr, len.l);
+			readptr += len.l;
 			continue;
 		}
 		if (op == OPBUF_DELAYOP) {

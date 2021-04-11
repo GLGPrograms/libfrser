@@ -43,6 +43,7 @@ void flash_select_protocol(uint8_t allowed_protocols);
 uint8_t flash_read(uint32_t addr);
 void flash_readn(uint32_t addr, uint32_t len);
 void flash_write(uint32_t addr, uint8_t data);
+void flash_writen(uint32_t addr, uint8_t* data, uint32_t len);
 #endif
 
 #ifdef FRSER_FEAT_SPI
