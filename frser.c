@@ -44,13 +44,13 @@
 
 #if defined(RAMEND) && defined(RAMSTART)
 // Sys_bytes = stack + bss vars.
-#ifndef FRSER_SYS_BYTES
-#define FRSER_SYS_BYTES 320
-#endif
-#define RAM_BYTES (RAMEND-RAMSTART+1)
-/* The length of the operation buffer */
-#define S_OPBUFLEN (RAM_BYTES-FRSER_SYS_BYTES-UART_BUFLEN-UARTTX_BUFLEN)
-#else /* No RAM size info, default to 1k. */
+// #ifndef FRSER_SYS_BYTES
+// #define FRSER_SYS_BYTES 320
+// #endif
+// #define RAM_BYTES (RAMEND-RAMSTART+1)
+// /* The length of the operation buffer */
+// #define S_OPBUFLEN (RAM_BYTES-FRSER_SYS_BYTES-UART_BUFLEN-UARTTX_BUFLEN)
+// #else /* No RAM size info, default to 1k. */
 #define S_OPBUFLEN 1024
 #endif /* RAMEND && RAMSTART */
 
@@ -173,7 +173,9 @@ const struct constanswer PROGMEM const_table[S_MAXCMD+1] = {
 	{ 0, NULL },		// set output drivers
 	{ 1, ca_syncnop },	// JEDEC toggle rdy => NAK (discard that thing)
 	{ 0, NULL },		// Poll
-	{ 0, NULL }		// Poll w delay
+	{ 0, NULL },		// Poll w delay
+	{ 0, NULL },		// Reset SDP
+	{ 0, NULL } 		// Set SDP
 };
 
 const uint8_t PROGMEM op2len[S_MAXCMD+1] = {
@@ -185,8 +187,8 @@ const uint8_t PROGMEM op2len[S_MAXCMD+1] = {
 	0x04, 0x00, 0x04,	/* write byte, write n, write delay */
 	0x00, 0x00, 0x00,	/* Exec opbuf, syncnop, max read-n */
 	0x01, 0x06, 0x04,	/* Set used bustype, SPI op, spi-speed */
-	0x01, 0x00, 0x04, 	/* output drivers, togglerdy(nakd), poll */
-	0x08			/* poll+delay */
+	0x01, 0x00, 0x04, /* output drivers, togglerdy(nakd), poll */
+	0x08, 0x00, 0x00	/* poll+delay, reset SDP, set SDP */
 };
 
 #ifdef FRSER_FEAT_S_BUSTYPE
@@ -217,6 +219,8 @@ static uint32_t buf2u24(uint8_t *buf) {
 #define OPBUF_DELAYOP 0x02
 #define OPBUF_POLL 0x03
 #define OPBUF_POLL_DLY 0x04
+#define OPBUF_RESET_SDP 0x05
+#define OPBUF_SET_SDP 0x06
 
 static uint8_t opbuf[S_OPBUFLEN];
 static uint16_t opbuf_bytes = 0;
@@ -253,6 +257,13 @@ static void do_cmd_opbuf_poll_dly(uint8_t *parbuf) {
 	do_cmd_opbuf(parbuf,OPBUF_POLL_DLY,8);
 }
 
+static void do_cmd_opbuf_reset_sdp(uint8_t *parbuf) {
+	do_cmd_opbuf(parbuf,OPBUF_RESET_SDP,0);
+}
+
+static void do_cmd_opbuf_set_sdp(uint8_t *parbuf) {
+	do_cmd_opbuf(parbuf,OPBUF_SET_SDP,0);
+}
 
 static void do_cmd_opbuf_poll(uint8_t *parbuf) {
 	do_cmd_opbuf(parbuf,OPBUF_POLL,4);
@@ -294,6 +305,16 @@ static void do_cmd_opbuf_exec(void) {
 		uint8_t op;
 		op = opbuf[readptr++];
 		if (readptr >= opbuf_bytes) goto nakret;
+		if (op == OPBUF_RESET_SDP) {
+			flash_reset_sdp();
+			readptr++;
+			continue;
+		}
+		if (op == OPBUF_SET_SDP) {
+			flash_set_sdp();
+			readptr++;
+			continue;
+		}
 		if ((op == OPBUF_WRITE1OP)||(op==OPBUF_WRITENOP)) {
 			uint32_t addr;
 			u16_u len;
@@ -568,6 +589,12 @@ void frser_operation(uint8_t op) {
 			break;
 		case S_CMD_O_POLL_DLY:
 			do_cmd_opbuf_poll_dly(parbuf);
+			break;
+		case S_CMD_O_RESET_SDP:
+			do_cmd_opbuf_reset_sdp(parbuf);
+			break;
+		case S_CMD_O_SET_SDP:
+			do_cmd_opbuf_set_sdp(parbuf);
 			break;
 #endif
 

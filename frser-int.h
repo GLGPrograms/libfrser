@@ -33,9 +33,11 @@
 #define S_CMD_O_POLL		0x17		/* Write to opbuf: poll (details in code/soon doc) */
 
 #define S_CMD_O_POLL_DLY	0x18		/* Write to opbuf: poll (details in code/soon doc) */
+#define S_CMD_O_RESET_SDP	0x19		/* Write to opbuf: reset SDP */
+#define S_CMD_O_SET_SDP		0x1A		/* Write to opbuf: set SDP */
 
 /* The biggest valid command value */
-#define S_MAXCMD 0x18
+#define S_MAXCMD 0x1a
 /* The maximum static length of parameters (poll_dly)) */
 #define S_MAXLEN 0x08
 
