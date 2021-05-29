@@ -36,8 +36,11 @@
 #define S_CMD_O_RESET_SDP	0x19		/* Write to opbuf: reset SDP */
 #define S_CMD_O_SET_SDP		0x1A		/* Write to opbuf: set SDP */
 
+#define S_CMD_S_ERRORCNT_RESET		0x1B		/* Reset errors counter */
+#define S_CMD_Q_ERRORCNT		0x1C		/* Get number of writing errors */
+
 /* The biggest valid command value */
-#define S_MAXCMD 0x1a
+#define S_MAXCMD 0x1C
 /* The maximum static length of parameters (poll_dly)) */
 #define S_MAXLEN 0x08
 

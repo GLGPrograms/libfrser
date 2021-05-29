@@ -265,6 +265,21 @@ static void do_cmd_opbuf_set_sdp(uint8_t *parbuf) {
 	do_cmd_opbuf(parbuf,OPBUF_SET_SDP,0);
 }
 
+static void do_cmd_set_errorcnt_reset() {
+	flash_error_cnt_reset();
+	SEND(S_ACK);
+}
+
+static void do_cmd_get_errorcnt() {
+	uint32_t errors = flash_error_cnt();
+	SEND(S_ACK);
+
+	SEND(errors & 0xff);
+	SEND((errors >> 8) & 0xff);
+	SEND((errors >> 16) & 0xff);
+	SEND((errors >> 24) & 0xff);
+}
+
 static void do_cmd_opbuf_poll(uint8_t *parbuf) {
 	do_cmd_opbuf(parbuf,OPBUF_POLL,4);
 }
@@ -598,6 +613,12 @@ void frser_operation(uint8_t op) {
 			break;
 		case S_CMD_O_SET_SDP:
 			do_cmd_opbuf_set_sdp(parbuf);
+			break;
+		case S_CMD_S_ERRORCNT_RESET:
+			do_cmd_set_errorcnt_reset();
+			break;
+		case S_CMD_Q_ERRORCNT:
+			do_cmd_get_errorcnt();
 			break;
 #endif
 

@@ -44,6 +44,8 @@ uint8_t flash_read(uint32_t addr);
 void flash_readn(uint32_t addr, uint32_t len);
 void flash_write(uint32_t addr, uint8_t data);
 void flash_writen(uint32_t addr, uint8_t* data, uint32_t len);
+void flash_error_cnt_reset();
+uint32_t flash_error_cnt();
 void flash_reset_sdp();
 void flash_set_sdp();
 #endif
