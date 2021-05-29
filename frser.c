@@ -304,17 +304,20 @@ static void do_cmd_opbuf_exec(void) {
 	for(readptr=0;readptr<opbuf_bytes;) {
 		uint8_t op;
 		op = opbuf[readptr++];
-		if (readptr >= opbuf_bytes) goto nakret;
+
+		// Options without arguments
 		if (op == OPBUF_RESET_SDP) {
 			flash_reset_sdp();
-			readptr++;
 			continue;
 		}
 		if (op == OPBUF_SET_SDP) {
 			flash_set_sdp();
-			readptr++;
 			continue;
 		}
+
+		// mild argument checking
+		if (readptr >= opbuf_bytes) goto nakret;
+		
 		if ((op == OPBUF_WRITE1OP)||(op==OPBUF_WRITENOP)) {
 			uint32_t addr;
 			u16_u len;
